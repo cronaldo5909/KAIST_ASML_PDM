@@ -132,6 +132,24 @@ TEST2 = CalcTrans(test_seq, charge_dict, 'Charge')
 TEST3 = CalcDist(test_seq, charge_dict, 'Charge')
 print(TEST, '\n', TEST1, '\n', TEST2, '\n', TEST3)
 
+
+########## On-work. Aim to create a dictionary with an array of features and list indicating classification as enzymes ###
+featurized_ans_dict = {}
+
+for i in range(2):
+  test_seq = seq_ans_dict['sequence'][i]
+  result_dict = {}
+  for k, v in Attribute_dict.items():
+    result_dict.update(CalcComp(test_seq, v, k))
+    result_dict.update(CalcTrans(test_seq, v, k))
+    result_dict.update(CalcDist(test_seq, v, k))
+  #print(result_dict)
+  Feature_list = list(result_dict.values())
+
+### Expected output should have a dictionary like: {'Features': [[values for features], [ ... ], ... , [ ... ]], 'Enzyme': [0, 1, 1, ..., 0, 1]} ###
+
+
+
 ###################################################################################################
 
 
