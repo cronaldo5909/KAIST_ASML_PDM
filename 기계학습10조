@@ -1,0 +1,66 @@
+from google.colab import drive
+drive.mount('/content/drive')
+
+from Bio import SwissProt
+import gzip
+import numpy as np
+###Other imports could be added if necessary###
+
+
+#########        PARSING & GETTING SEQUENCE & ENZYME CLASSIFICATION         #############
+
+###Use parsing function that is available in biopython###
+handle = SwissProt.parse(gzip.open("/content/drive/My Drive/Colab Notebooks/uniprot_sprot.dat.gz", "rt"))
+
+###Create a list for the sequence information for each protein###
+seq_list = []
+
+###Create a list indicating whether the given protein is an enzyme or not###
+ans_list = []
+
+###For each protein in the parsed data file, add the sequence and enzyme information into the lists made###
+for record in handle:
+  a = record.description
+  b = record.sequence
+  seq_list.append(b)
+  if a.count("EC") > 0:
+    ans_list.append(1)
+  else:
+    ans_list.append(0)
+
+###Save the sequence and enzyme data into a dictionary as in for HW (week9~11)###
+seq_ans_dict = {'sequence': seq_list, 'answers': ans_list}
+
+###Counts the number of enzymes in the whole set of proteins###
+#enzyme_count = 0
+#for enzymes in seq_ans_dict['answers']:
+#  if enzymes == 1:
+#    enzyme_count = enzyme_count + 1
+#print(enzyme_count)
+
+###################################################################################################
+
+
+
+
+###################################     FEATURIZATION      ########################################
+
+###Organized amino acids that correspond to certain attributes that can be used to create the features for a given protein###
+charge_dict = {'Neutral': [A, C, F, G, H, I, L, M, N, P, Q, S, T, V, W, Y], 'Negative': [D, E], 'Positive': [K, R]} ##Charge
+hydroph_dict = {'Hydrophobic': [C, F, I, L, M, V, W], 'Neutral': [A, G, H, P, S, T, Y], 'Polar': [D, E, K, N, Q, R]} ##Hydrophobicity
+polar_dict = {'Low': [C, F, I, L, M, V, W, Y], 'Medium': [A, G, P, S, T], 'High': [D, E, H, K, N, Q, R]} ##Polarity
+polariz_dict = {'Low': [A, D, G, S, T], 'Medium': [C, E, I, L, N, P, Q, V], 'High': [F, H, K, M, R, W, Y]} ##Polarizability
+ss_dict = {'Coil': [D, G, N, P, S], 'Helix': [A, E, H, K, L, M, Q, R], 'Strand': [C, F, I, T, V, W, Y]} ##Secondary structure
+sol_dict = {'Buried': [A, C, F, G I L V W], 'Intermediate': [H, M, P, S, T, Y], 'Exposed': [D, E, K, N, R, Q]} ##Solvent Accessibility
+
+######################################
+#######Code for converting ###########
+#######attributes to values ##########
+#######for features ##################
+
+###Feature dictionary that saves values that are input as features for the various attributes###
+feature_dict = {'Charge': charge_vals, 'Hydrophobicity': hydroph_vals, 'Polarity': polar_vals, 'Polarizability': polariz_val, 'Secondary Structure': ss_val, 'Solvent Accessibility': sol_val, 'Answer', }
+
+###################################################################################################
+
+
