@@ -22,6 +22,7 @@ ans_list = []
 for record in handle:
   a = record.description
   b = record.sequence
+  b = b[:300]
   seq_list.append(b)
   if a.count("EC") > 0:
     ans_list.append(1)
@@ -32,11 +33,18 @@ for record in handle:
 seq_ans_dict = {'sequence': seq_list, 'answers': ans_list}
 
 ###Counts the number of enzymes in the whole set of proteins###
-#enzyme_count = 0
-#for enzymes in seq_ans_dict['answers']:
-#  if enzymes == 1:
-#    enzyme_count = enzyme_count + 1
-#print(enzyme_count)
+enzyme_count = 0
+protein_count = 0
+for proteins in seq_ans_dict['answers']:
+  if proteins == 1:
+    enzyme_count = enzyme_count + 1
+  protein_count = protein_count + 1
+print(protein_count, enzyme_count)
+
+
+####SAVING SEQUENCE INFORMATION TO CSV##############
+##seq_to_csv = pd.DataFrame(seq_ans_dict)
+##seq_to_csv.to_csv('/content/drive/My Drive/Colab Notebooks/SeqAndAnswers.csv')
 
 ###################################################################################################
 
@@ -48,13 +56,12 @@ seq_ans_dict = {'sequence': seq_list, 'answers': ans_list}
 ###Organized amino acids that correspond to certain attributes that can be used to create the features for a given protein###
 charge_dict = {'Neutral': 'ACFGHILMNPQSTVWY', 'Negative': 'DE', 'Positive': 'KR'} ##Charge
 hydroph_dict = {'Hydrophobic': 'CFILMVW', 'Neutral': 'AGHPSTY', 'Polar': 'DEKNQR'} ##Hydrophobicity
-normVDW_dict = {'Small': 'ACDGPST', 'Medium': 'EILNQV', 'Large': 'FHKMRWY'}
-polar_dict = {'Low': 'CFILMVWY', 'Medium': 'AGPST', 'High': 'DEHKNQR'} ##Polarity
-polariz_dict = {'Low': 'ADGST', 'Medium': 'CEILNPQV', 'High': 'FHKMRWY'} ##Polarizability
+normVDW_dict = {'0-2.78': 'ACDGPST', '2.95-4.0': 'EILNQV', '4.03-8.08': 'FHKMRWY'}
+polar_dict = {'4.9-6.2': 'CFILMVWY', '8.0-9.2': 'AGPST', '10.4-13.0': 'DEHKNQR'} ##Polarity
+polariz_dict = {'0 - .108': 'ADGST', '0.128-0.186': 'CEILNPQV', '0.219-0.409': 'FHKMRWY'} ##Polarizability
 ss_dict = {'Coil': 'DGNPS', 'Helix': 'AEHKLMQR', 'Strand': 'CFITVWY'} ##Secondary structure
 sol_dict = {'Buried': 'ACFGILVW', 'Intermediate': 'HMPSTY', 'Exposed': 'DEKNRQ'} ##Solvent Accessibility
 
-Attribute = (charge_dict, hydroph_dict, normVDW_dict, polar_dict, polariz_dict, ss_dict, sol_dict)
 Attribute_dict = {'Charge': charge_dict, 
                   'Hydrophobicity': hydroph_dict, 
                   'Normalized_vdW_volume': normVDW_dict, 
@@ -81,7 +88,7 @@ def CalcComp(prot_seq, Attribute, Attribute_name):
   num_seq = AASeqToNum(prot_seq, Attribute)
   Comp_vals = ['1', '2', '3']
   for val in Comp_vals:
-    Comp_results[Attribute_name + '_C%s'%(val)] = num_seq.count(val)/seq_length
+    Comp_results[Attribute_name + '_C%s'%(val)] = [num_seq.count(val)/seq_length]
   return Comp_results
 
 ########## CALCULATING TRANSITION ##############
@@ -91,7 +98,7 @@ def CalcTrans(prot_seq, Attribute, Attribute_name):
   num_seq = AASeqToNum(prot_seq, Attribute)
   Trans_vals = ['12', '13', '23']
   for val in Trans_vals:
-    Trans_results[Attribute_name + '_T%s'%(val)] = (num_seq.count(val) + num_seq.count(val[::-1]))/(seq_length-1)
+    Trans_results[Attribute_name + '_T%s'%(val)] = [(num_seq.count(val) + num_seq.count(val[::-1]))/(seq_length-1)]
   return Trans_results
 
 ########## CALCULATING DISTRIBUTION ##############
@@ -114,41 +121,54 @@ def CalcDist(prot_seq, Attribute, Attribute_name):
       while int(perc+1) > count:
         index = num_seq.find(val, index+1)
         count = count + 1
-      Dist_results[Attribute_name + '_D%s_%s'%(val, Dist_perc[perc_index])] = (index + 1)/seq_length
+      Dist_results[Attribute_name + '_D%s_%s'%(val, Dist_perc[perc_index])] = [(index + 1)/seq_length]
       if num_seq.find(val) == 0 and perc == 1:
-        Dist_results[Attribute_name + '_D%s_%s'%(val, Dist_perc[perc_index])] = 0
+        Dist_results[Attribute_name + '_D%s_%s'%(val, Dist_perc[perc_index])] = [0]
       perc_index = perc_index + 1
   return Dist_results
 
 ######## TEST CODE FOR GENERATING SEQUENCE USING CHARGE ATTRIBUTE #######
 ###Print the amino acid sequence for the first protein###
-test_seq = seq_ans_dict['sequence'][0]
-print(test_seq)
+##test_seq = seq_ans_dict['sequence'][0]
+##print(test_seq)
 
 ######## TEST CODE FOR THE TEST SEQUENCE FOR CALCULATING CTD #############
-TEST = AASeqToNum(test_seq, charge_dict)
-TEST1 = CalcComp(test_seq, charge_dict, 'Charge')
-TEST2 = CalcTrans(test_seq, charge_dict, 'Charge')
-TEST3 = CalcDist(test_seq, charge_dict, 'Charge')
-print(TEST, '\n', TEST1, '\n', TEST2, '\n', TEST3)
+##TEST = AASeqToNum(test_seq, charge_dict)
+##TEST1 = CalcComp(test_seq, charge_dict, 'Charge')
+##TEST2 = CalcTrans(test_seq, charge_dict, 'Charge')
+##TEST3 = CalcDist(test_seq, charge_dict, 'Charge')
+##print(TEST, '\n', TEST1, '\n', TEST2, '\n', TEST3)
 
 
-########## On-work. Aim to create a dictionary with an array of features and list indicating classification as enzymes ###
-featurized_ans_dict = {}
-
-for i in range(2):
+########## Create a dictionary with each descriptors with list of values for each protein and classification as enzymes ###
+result_dict = {}
+for i in range(len(seq_list)):
   test_seq = seq_ans_dict['sequence'][i]
-  result_dict = {}
+  temp_dict = {}
   for k, v in Attribute_dict.items():
-    result_dict.update(CalcComp(test_seq, v, k))
-    result_dict.update(CalcTrans(test_seq, v, k))
-    result_dict.update(CalcDist(test_seq, v, k))
-  #print(result_dict)
-  Feature_list = list(result_dict.values())
+    if i == 0:
+      result_dict.update(CalcComp(test_seq, v, k))
+      result_dict.update(CalcTrans(test_seq, v, k))
+      result_dict.update(CalcDist(test_seq, v, k))
+      continue
+    temp_dict.update(CalcComp(test_seq, v, k))
+    temp_dict.update(CalcTrans(test_seq, v, k))
+    temp_dict.update(CalcDist(test_seq, v, k))
+  if not i == 0:
+    for keys in result_dict.keys():
+      result_dict[keys].append(temp_dict[keys][0])
 
-### Expected output should have a dictionary like: featurized_ans_dict = {'Features': [[a list for values of features for one protein], [ ... ], ... , [ ... ]], 'Enzyme': [0, 1, 1, ..., 0, 1]} ###
+featurized_ans_dict = {}
+featurized_ans_dict.update(result_dict)
+featurized_ans_dict.update({'Answers': ans_list})
 
 
+########################################### Save featurized data as .csv################################################
+#### The columns correspond to the features, except for the last column which shows whether the protein is an enzyme #####
+########################################### Each row represents one protein ############################################
+
+feat_make_csv = pd.DataFrame(featurized_ans_dict)
+feat_make_csv.to_csv('/content/drive/My Drive/Colab Notebooks/FeaturesAndAnswers.csv')
 
 ###################################################################################################
 
