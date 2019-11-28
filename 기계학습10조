@@ -33,13 +33,13 @@ for record in handle:
 seq_ans_dict = {'sequence': seq_list, 'answers': ans_list}
 
 ###Counts the number of enzymes in the whole set of proteins###
-enzyme_count = 0
-protein_count = 0
-for proteins in seq_ans_dict['answers']:
-  if proteins == 1:
-    enzyme_count = enzyme_count + 1
-  protein_count = protein_count + 1
-print(protein_count, enzyme_count)
+#enzyme_count = 0
+#protein_count = 0
+#for proteins in seq_ans_dict['answers']:
+#  if proteins == 1:
+#    enzyme_count = enzyme_count + 1
+#  protein_count = protein_count + 1
+#print(protein_count, enzyme_count)
 
 
 ####SAVING SEQUENCE INFORMATION TO CSV##############
