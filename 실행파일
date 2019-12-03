@@ -1,0 +1,43 @@
+from google.colab import drive
+drive.mount('/content/drive')
+
+import numpy as np
+import pandas as pd
+
+test_csv = pd.read_csv('/FeaturesAndAnswers.csv') ###csv 파일 경로
+
+test_csv = test_csv.T
+
+features = []
+answers = []
+
+for proteins in test_csv:
+  prot_feat = np.array(test_csv[proteins][1:-1]).reshape(-1)
+  features.append(prot_feat)
+  prot_ans = np.array(test_csv[proteins][-1])
+  answers.append(prot_ans)
+
+
+from sklearn import model_selection
+
+def split_var():
+    data_x = features
+    data_x = np.array(data_x)
+    data_y = answers
+    data_y = np.array(data_y)
+    train_x, test_x, train_y, test_y = model_selection.train_test_split(data_x, data_y, test_size = 0.3, stratify = data_y) ##Test size는 prediction이 오래 걸리면 낮추면 될 것 같아요.
+    return train_x, test_x, train_y, test_y
+
+train_x, test_x, train_y, test_y = split_var()
+print('Size of X training dataset: ', train_x.shape)
+print('Size of y training dataset: ', train_y.shape)
+print('Size of X testing dataset: ', test_x.shape)
+print('Size of y testing dataset: ', test_y.shape)
+
+
+
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+
+import time
